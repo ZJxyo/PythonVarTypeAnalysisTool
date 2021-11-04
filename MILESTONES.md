@@ -24,7 +24,7 @@
 # Milestone 2
 ### Brief description of your planned program analysis (and visualisation, if applicable) ideas
 #### Problem statement
-Dynamic program analysis of variable types in a Python program.
+Static program analysis of variable types in a Python program.
 #### Features
 Visualization includes: statistics; graphs, such as a pie chart showing type distribution; Color coding different types in the code; The analysis shall be performed globally and on a per-variable basis. The type history of each variable name should be recorded. Globally, the total distribution of types could be analyzed as statistics. For example, we could present a count of the total number of types, total number of variables with ambiguous types, and the total number of type changes in a given program.
 #### Target audience
@@ -32,6 +32,8 @@ Entry level python users whose programs are not overly complex and involve only 
 #### Visualization samples (mockup)
 ![](p2mockup1.PNG)
 ### TA Feedback
+- Static analysis would be ideal for this project idea, as performing dynamic analysis would be as simple as inserting code to wherever the variable type is ambiguous.
+- Project should include non-trivial analysis, such as inferring, approximating, and estimating information. 
 ### Follow-up tasks/features still to design
 - Consider type casting and its effects
 - Consider linting?
