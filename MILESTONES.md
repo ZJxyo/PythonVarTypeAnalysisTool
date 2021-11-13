@@ -1,6 +1,6 @@
 # Milestone 1
 ### Discussions on Ideas
-#### Candidate Ideas
+#### Candidate ideas
 - Control flow visualization. Mapping logical paths into a tree for visualization
 - Linter for syntax and type checking. Highlighting & statistics for visualization
 - Stack visualization
@@ -22,7 +22,7 @@
 - Design details and features
 
 # Milestone 2
-### Brief description of your planned program analysis (and visualisation, if applicable) ideas
+### Brief Description of Your Planned Program Analysis (& Visualisation, if Applicable) Ideas
 #### Problem statement
 Static program analysis of variable types in a Python program.
 #### Features
@@ -34,7 +34,7 @@ Entry level python users whose programs are not overly complex and involve only 
 ### TA Feedback
 - Static analysis would be ideal for this project idea, as performing dynamic analysis would be as simple as inserting code to wherever the variable type is ambiguous.
 - Project should include non-trivial analysis, such as inferring, approximating, and estimating information. 
-### Follow-up tasks/features still to design
+### Follow-up Tasks/Features Still to Design
 - Consider type casting and its effects
 - Consider linting?
 - Investigate libraries for parsing the source code
@@ -98,9 +98,26 @@ Both variables, a and b, undergo index accesses, then they must be either one of
 #### Question 4</br>
 After doing type analysis by hand, do you feel that a tool for performing type analysis automatically would be beneficial to python programmers? Any features you would like to see or use in a type analysis tool? </br>
 
-### Changes to original design
+### User Study Results
+##### Question 1
+- The user had to consider the possible values for the random boolean to analyze each branch of the if-statement to infer the possible types for var at line 9.
+- The user correctly answered that it can be any of the three types with probability 1/3.
+##### Question 2
+- The user had no problem with identifying the types for variables a, b, c. 
+- Also identified the possible error cases if b is not the correct type for splitting and when a is not the correct type for the addition operator.
+##### Question 3
+- The user correctly identified int, float, boolean cannot be possible answers.
+- The user was not really familiar with how some types can be accessed with the bracket notation, such as when the variable is a dictionary or a set.
+-The user had to manually consider the different combinations of a[0] and b[0] to infer the possible type of c.
+##### Question 4
+- The user thought that a tool which could do this automatically would be very helpful. The user is more familiar with matlab, so the user compares some type errors that occur in python and matlab.
+##### Reflection about the user study
+- It can be very tedious for a user to have to step through all lines of code to identify the possible type of one variable. Especially if we were to analyze large blocks of code, it would not be an easy task. Particularly, this task can become very difficult for inexperienced programmers, which is our target audience, so a tool to automatically execute a static type analysis should be very helpful as observed in the responses from our user study.
+
+
+### Changes to Original Design
 - Added features for error checking, such as type mismatch, faulty function parameters, etc. Decreased emphasis on the visualization component. Increased emphasis on the analysis component.
-### Planned timeline
+### Planned Timeline
 - 11/19 Plan final user study and start considering participants
 - 11/18 or 11/19 Finish implementing the static analysis portion of the project
 - 11/23 or 11/24 Finish implementing the visual component 
