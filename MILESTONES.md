@@ -48,3 +48,66 @@ To be determined once the project starts to take shape. Meanwhile, all tasks are
 - Think of more features
 - Start implementation
 
+# Milestone 3
+### Visual Mockup
+#### Note: Design Not Final
+![](https://media.github.students.cs.ubc.ca/user/1447/files/98252200-43fd-11ec-8340-cf71c1ba500d)
+### User Study
+#### Question 1 </br>
+Describe how the type of var changes with the code’s execution. Perform type analysis on the variable var when the code executes line 8.  </br>
+
+    1    var = 10
+    2    rand_bool = 0 or 1 or 2 uniform random 
+    3    if (rand_bool == 2):
+    4        var = “abc”
+    5    elif (rand_bool == 1):
+    6        var = [1, 2, 3]
+    7    else:
+    8        var += 5
+    9    print(var)
+##### Solution: </br>
+Var: </br>
+rand_bool == 0, 1/3 probability, int from start to finish</br>
+rand_bool == 1, 1/3 probability, int @ line 1 -> array @ line 6 to finish</br>
+rand_bool == 2, 1/3 probability, int @ line 1 -> string @ line 4 to finish</br>
+At line 9, var could be either an int, string, or array each with 1/3 probability.</br>
+
+#### Question 2</br>
+Perform type analysis on the variables a, b, and c. Consider both the error and valid cases. Draw clues from the implementation. For the purposes of this exercise, consider only the following types: int, float, boolean, string, list, tuple, dictionary, and set.</br>
+
+    1    c = a + b.split(“.”)
+##### Solution:</br>
+Error case: b is not a string. Error thrown.</br>
+Error case: a is not an array/list. Error thrown.</br>
+Valid case: split only works on string inputs, thus b must be a string. b.split(“.”) will separate the string b by “.” and return a list. Addition only works when both sides are arrays, thus variable a must also be an array. Since a and b.split are both arrays, c must also be an array.</br>
+
+#### Question 3</br>
+Perform type analysis on the variables in the function foo(a, b). Consider both the error and valid cases. Draw clues from the implementation. For the purposes of this exercise, consider only the following types: int, float, boolean, string, list, tuple, dictionary, and set.</br>
+
+    1    def foo(a, b):
+    2        c = a[0] + b[0]
+    3        print(c)
+    4    def main():
+    5        a = ??? <-- unknown
+    6        b = ??? <-- unknown
+    7        foo(a, b)
+##### Solution:</br>
+Both variables, a and b, undergo index accesses, then they must be either one of list, string, tuple, dictionary with keys of 0. For a[0] + b[0] to work, both terms are likely the same type. String + string, int/float/bool + int/float/bool, list + list, or tuple + tuple. Thus, c could be either a string, int, float, boolean, list, or tuple.</br>
+
+
+#### Question 4</br>
+After doing type analysis by hand, do you feel that a tool for performing type analysis automatically would be beneficial to python programmers? Any features you would like to see or use in a type analysis tool? </br>
+
+### Changes to original design
+- Added features for error checking, such as type mismatch, faulty function parameters, etc. Decreased emphasis on the visualization component. Increased emphasis on the analysis component.
+### Planned timeline
+- 11/19 Plan final user study and start considering participants
+- 11/18 or 11/19 Finish implementing the static analysis portion of the project
+- 11/23 or 11/24 Finish implementing the visual component 
+- 11/25 or 11/26 Create the video for the project
+### TA Feedback
+- Should include type inference in function calls, such as when parameters are passed in, but we don’t have their types explicitly defined.
+- Start thinking about actual use cases with complex examples for the static analysis. 
+- No need to focus too much on visualization. 
+- Try a branching flow chart instead of a scatter plot for the type history diagram.
+
