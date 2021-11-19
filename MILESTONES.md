@@ -128,3 +128,43 @@ After doing type analysis by hand, do you feel that a tool for performing type a
 - No need to focus too much on visualization. 
 - Try a branching flow chart instead of a scatter plot for the type history diagram.
 
+# Milestone 4
+### Status of Implementation
+#### Control Flow
+We have implemented the static analysis of conditional statements such as if/for/while/try-catch and their nested variants. We decided to overestimate the possible data types after we process the conditional branches, so we are taking the union of the possible types of a variable if it was modified inside a conditional block.
+#### Operations
+We can perform type check on unary operations (not, invert, +, -), boolean operations (and, or), and binary operations (+, -, *, /, **, %). In particular, we only let legal operations to be performed depending on the types of the variables used as operands. Illegal operations will result in an ‘Error’ assignment, whereas ambiguous types will result in an ‘Ambiguous’ assignment. 
+#### Function Declaration
+Arguments or variables of a function are instantiated with the function definition. We overestimate by starting these variables with all possible types. As each line of the body of the function is processed, we infer from operations involving the corresponding argument and prune the set of possible types to only retain types that will result in valid operations. This implementation aims to prioritize as many sequential lines as possible to execute without encountering errors.
+#### Function Returns
+Return types are based on the most recent assignment or type update for each corresponding variable.
+#### Function Calls Parameter Type Inference
+When calling a function, the parameters passed in will be type checked against the type inference done during function declaration. If every parameter passed in is a subset of the corresponding argument’s inferred types, then the function call is considered legal. If a parameter’s possible types only intersect with the corresponding argument’s inferred types, then the function call is considered ‘Ambiguous’. If a parameter’s possible types do not intersect with the corresponding argument’s inferred types, then the function call is considered ‘Error’.
+#### Function Calls Internal
+Internal function calls are supported.
+#### Function Calls External
+Calls to external libraries are supported if declared in the JSON mapping, read ‘Supported Libraries’ for more information. In addition, external calls can be chained, i.e. x = f1().f2().f3().
+#### Function Calls Object
+Object calls for built-in types are supported. For example, “aaa”.split() is legal if the split function is mapped under class ‘str’ in the JSON mapping.
+#### Function Call Chaining
+Chaining external calls are legal. External calls can be used with object calls. Chaining local and external currently not supported.
+#### Function Overloading
+Function definition overloading is supported. For example, a # parameter function is mapped as fn_name|#.
+#### Types Checked
+The types that can be checked so far are int, float, bool, str, list, tuple, set, dictionary.
+#### Abstract State
+The state for our static analysis is stored in a nested map with the following format {function name: {var name: {line number: possible type}}}.
+#### Supported Libraries
+We implemented a functionality that loads a map from a JSON file with the format  {class name: {function name: {return: {line number: possible type}}}}. This means that the possible external classes and their functions’ return types need to be included in this file before running the static analysis. 
+
+### Final User Study Plans
+- We plan to provide sample code to participants and ask for their feedback. 
+
+### Planned Timeline:
+- 11/23 or 11/24 Finish implementing the visual component 
+- 11/25 or 11/26 Create the video for the project
+
+### TA Feedback:
+- The progress of our implementation is good. When implementing the static analysis, we should focus more on control flow. Additionally, we should check out the “Unification” algorithm which is used for type inference. This algorithm might be useful for implementing the static analysis, but it is not necessary.
+
+
