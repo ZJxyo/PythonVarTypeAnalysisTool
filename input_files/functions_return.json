@@ -1,0 +1,44 @@
+{
+  "numpy.random": {
+    "randint|1": {
+      "return": {
+        "0": [
+          "<class 'str'>"
+        ]
+      }
+    },
+    "randrange|1": {
+      "return": {
+        "0": [
+          "<class 'list'>",
+          "<class 'int'>"
+        ]
+      }
+    }
+  },
+  "str": {
+    "foo|0": {
+      "return": {
+        "0": [
+          "<class 'str'>"
+        ]
+      }
+    },
+    "split|0": {
+      "return": {
+        "0": [
+          "<class 'list'>"
+        ]
+      }
+    }
+  },
+  "list": {
+    "boo|0": {
+      "return": {
+        "0": [
+          "<class 'int'>"
+        ]
+      }
+    }
+  }
+}
