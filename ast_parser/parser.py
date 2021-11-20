@@ -551,6 +551,10 @@ class Analyzer(ast.NodeVisitor):
                 t = set()
                 if isinstance(v, ast.Name):
                     keys = list(D[self.fn_name][v.id].keys())
+                    if np.max(keys) == n.lineno and len(keys) > 1:
+                        keys.remove(np.max(keys))
+                    else:
+                        print("uninitialized variable, check code")
                     t = D[self.fn_name][v.id][np.max(keys)]
                 else:
                     if isinstance(v, ast.Constant):
@@ -561,7 +565,6 @@ class Analyzer(ast.NodeVisitor):
                         t = {tuple}
                     else:
                         print("case not covered")
-
                 cur = self.bool_translator(cur, t, n.op)
         return cur
 
@@ -579,6 +582,8 @@ class Analyzer(ast.NodeVisitor):
         else:
             if len(cur) == 0:
                 return v
+            elif len(v) == 0:
+                return cur
 
             a = cur.pop()
             cur.add(a)
@@ -674,9 +679,17 @@ class Analyzer(ast.NodeVisitor):
                         a_list.append(self.call_param_type(rt, fn_name, num))
                     else:
                         a_list.append(0)
+                elif isinstance(p, ast.Name):
+                    keys = list(D[self.fn_name][p.id].keys())
+                    if np.max(keys) == n.lineno and len(keys) > 1:
+                        keys.remove(np.max(keys))
+                    rt = D[self.fn_name][p.id][np.max(keys)]
+                    a_list.append(self.call_param_type(rt, fn_name, num))
                 else:
                     a_list.append(0)
                 num = num - 1
+
+            print(a_list)
             if 0 in a_list:
                 D[self.fn_name][self.var_name][self.line_no] = 'Error'
             elif 2 in a_list:
