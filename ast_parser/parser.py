@@ -847,6 +847,17 @@ class Analyzer(ast.NodeVisitor):
         self.dictionary_helper()
         self.recurse(n.value)
 
+    def process_aug(self, n):
+        # print('\n', n.lineno, n.targets[0].id, "=", end=' ')
+        self.var_name = n.target.id
+        self.line_no = n.lineno
+        self.dictionary_helper()
+        if len(list(D[self.fn_name][self.var_name].keys())) == 1:
+            D[self.fn_name][self.var_name][self.line_no] = 'Error'
+        else:
+            self.recurse(ast.BinOp(n.target, n.op, n.value))
+
+
     # def process_subscript(self, n):
 
     # magic switch recursion thing
@@ -883,6 +894,8 @@ class Analyzer(ast.NodeVisitor):
             self.process_call(n)
         elif isinstance(n, ast.Return):
             self.process_return(n)
+        elif isinstance(n, ast.AugAssign):
+            self.process_aug(n)
         # elif isinstance(n, ast.Subscript):
         #     self.process_subscript(n)
 
