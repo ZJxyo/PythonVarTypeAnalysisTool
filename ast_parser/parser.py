@@ -258,10 +258,11 @@ class Analyzer(ast.NodeVisitor):
     # processes the content of assign
     def process_assign(self, n):
         # print('\n', n.lineno, n.targets[0].id, "=", end=' ')
-        self.var_name = n.targets[0].id
-        self.line_no = n.lineno
-        self.dictionary_helper()
-        self.recurse(n.value)
+        for var in n.targets:
+            self.var_name = var.id
+            self.line_no = n.lineno
+            self.dictionary_helper()
+            self.recurse(n.value)
 
     def dictionary_helper(self):
         if self.fn_name not in D:
