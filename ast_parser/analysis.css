@@ -1,0 +1,40 @@
+  html {
+    white-space:pre;
+    background-color: white;
+  }
+  
+  .ambiguous mark {
+    background-color: red;
+    color: black;
+  }
+
+  .list mark {
+    background-color: yellow;
+    color: black;
+  }
+
+  .float mark {
+    background-color: green;
+    color: black;
+  }
+
+  .str mark {
+    background-color: purple;
+    color: black;
+  }
+
+  .int mark {
+    background-color: olive;
+    color: red;
+  }
+
+  .tuple mark {
+    background-color: pink;
+    color: black;
+  }
+
+  .bool mark {
+    background-color: cornflowerblue;
+    color: black;
+  }
+

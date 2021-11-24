@@ -2,11 +2,21 @@ import ast
 import os
 import numpy as np
 import json
+from yattag import Doc
 
+# TODO: write doc, include that you need to install yattag
 # {class name: {function name: {var name: {line number: possible type}}}}
 D = {}
 C = {'Default': D}
 L = {}
+IdMap = {'Ambiguous' : 'ambiguous', 
+            '<class \'list\'>' : 'list', 
+            ' <class \'float\'>' : 'float',
+            '<class \'str\'>' : 'str',
+            '<class \'int\'>' : 'int',
+            '<class \'tuple\'>' : 'tuple',
+            '<class \'bool\'>' : 'bool',
+            }
 
 
 def decode(obj):
@@ -57,12 +67,100 @@ def main():
         C[c] = libs[c]
 
     file = os.path.join('..', 'input_files', 'input1.py')
+    code = ""
     with open(file, 'r') as source:
-        tree = ast.parse(source.read())
+        code = source.read()
+    tree = ast.parse(code)
     analyzer = Analyzer()
     analyzer.visit(tree)
 
     print(C)
+    htmlText = generateHighlightedCode(C['Default'], code.split('\n'))
+
+    with open("analysis.html", "w") as file1:
+        file1.writelines(htmlText)
+    print(C)
+
+def generateHighlightedCode(typeMapping, codeList):
+    doc, tag, text = Doc().tagtext()
+
+    with tag('html'):
+        with tag('head'):
+            doc.stag('link',rel='stylesheet', href='analysis.css')
+        with tag('body'):
+            highlightCodeLines(typeMapping, codeList, doc, tag, text)
+        
+    return doc.getvalue()
+
+def highlightCodeLines(typeMapping, codeList, doc, tag, text):
+    functionTypeMap = {}
+    lineNumber = 1
+    with tag('code'):
+        for code in codeList:
+            print(code)
+            codeSplit = code.split()
+            if (len(codeSplit) > 0 and codeSplit[0] == 'def'):
+                functionName = codeSplit[1].split('(')[0]
+                numParameters = getNumParameters(code)
+                key = functionName + '|' + str(numParameters)
+                functionTypeMap = typeMapping[key]
+                if ('return' in typeMapping[key]): 
+                    returnType = list(typeMapping[key]['return'].values())[0]
+                    tagID = IdMap[returnType]
+                    with tag('p', klass = tagID ):
+                        with tag('mark'):
+                            text(code)
+                else:
+                    with tag('p'):
+                        text(code)
+            elif len(codeSplit) > 0 and codeSplit[0] == '#':
+                lineNumber += 1
+                continue
+            else:
+                extractVariablesFromLine(code, functionTypeMap, lineNumber, doc, tag, text)
+            lineNumber += 1
+
+# get all variables that exist in map and their indicies
+def extractVariablesFromLine(codeLine, typeMap, lineNumber, doc, tag, text):
+
+    printed = False
+    for key in typeMap:
+        if (lineNumber in typeMap[key]):
+            typeOfVar = typeMap[key][lineNumber]
+            codeSplitByEqual = codeLine.split('=')
+            if (len(codeSplitByEqual) == 2):
+                printed = True
+                print(typeOfVar)
+                classId = getClassIdFromType(typeOfVar)
+                with tag('p', klass = classId):
+                    locVar = codeSplitByEqual[0].index(key)
+                    text(codeSplitByEqual[0][0:locVar])
+                    with tag('mark'):
+                        text(codeSplitByEqual[0][locVar:locVar+len(key)])
+                    text(f'{codeSplitByEqual[0][locVar+len(key):]}={codeSplitByEqual[1]}')
+    if printed is False:
+        with tag('p'):
+            text(codeLine)
+            # TODO: support multiple 
+            # TODO: hover functionality if multiple types
+
+def getClassIdFromType(typeOfVar):
+    if isinstance(typeOfVar, set):
+        if (len(typeOfVar) == 1):
+            # return IdMap[str(typeOfVar.pop())]
+            return IdMap[str(next(iter(typeOfVar)))]
+        else:
+            return "MULTIPLE"
+    elif isinstance(typeOfVar, str):
+        return IdMap[typeOfVar]
+    else:
+        return "RANDOM"
+
+def getNumParameters(codeSplit):
+    methodName = codeSplit.split(" ", 1)[1]
+    if (len(methodName.split(", ")) == 1):
+        return 0
+    return len(methodName.split(", "))
 
 
 class Analyzer(ast.NodeVisitor):

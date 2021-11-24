@@ -373,6 +373,17 @@ import numpy
 #     a[b[c]]
 #     a[b][c]
 #     a[b]
-def foo():
-    a = [1, 2, [3, 4, 5, [6, [7, 8], 9], 10], 11]
-    y = 2 * a
+def foo(a, b):
+    y = 5
+    x = a + b
+    return x
+
+def bar():
+    a = 33
+    b = 44
+    
+    x = foo(33, 44)
+    x = a + b
+
+    x += a
+    print(x)
