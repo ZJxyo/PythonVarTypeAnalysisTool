@@ -16,6 +16,7 @@ IdMap = {'Ambiguous' : 'ambiguous',
             '<class \'int\'>' : 'int',
             '<class \'tuple\'>' : 'tuple',
             '<class \'bool\'>' : 'bool',
+            '<class \'set\'>'  : 'set',
             }
 
 
@@ -106,7 +107,8 @@ def highlightCodeLines(typeMapping, codeList, doc, tag, text):
                 functionTypeMap = typeMapping[key]
                 if ('return' in typeMapping[key]): 
                     returnType = list(typeMapping[key]['return'].values())[0]
-                    tagID = IdMap[returnType]
+                    
+                    tagID = getClassIdFromType(returnType)
                     with tag('p', klass = tagID ):
                         with tag('mark'):
                             text(code)
@@ -125,12 +127,12 @@ def extractVariablesFromLine(codeLine, typeMap, lineNumber, doc, tag, text):
 
     printed = False
     for key in typeMap:
+        print(key)
         if (lineNumber in typeMap[key]):
             typeOfVar = typeMap[key][lineNumber]
             codeSplitByEqual = codeLine.split('=')
             if (len(codeSplitByEqual) == 2):
                 printed = True
-                print(typeOfVar)
                 classId = getClassIdFromType(typeOfVar)
                 with tag('p', klass = classId):
                     locVar = codeSplitByEqual[0].index(key)
