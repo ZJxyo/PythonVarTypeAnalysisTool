@@ -22,7 +22,7 @@ IdMap = {'Ambiguous' : 'Ambiguous',
             'Error' : 'Error',
             'Multiple': 'Multiple'
             }
-
+errorMap = {}
 
 def decode(obj):
     dup = {}
@@ -257,6 +257,10 @@ def generateErrors(typeMapping, codeList, doc, tag, text):
             else:
                 getErrorLineFromCode(code, functionTypeMap, lineNumber, doc, tag, text)
             lineNumber += 1
+        for key in sorted(errorMap):
+            with tag('p'):
+                text(f"{str(key)}: {errorMap[key]}")
+
 def getErrorLineFromCode(code, typeMap, lineNumber, doc, tag, text):
     printed = False
     for key in typeMap:
@@ -273,9 +277,9 @@ def getErrorLineFromCode(code, typeMap, lineNumber, doc, tag, text):
                         # text(codeSplitByEqual[0][locVar:locVar+len(key)])
                     # text(f'{codeSplitByEqual[0][locVar+len(key):]}={codeSplitByEqual[1]}')
                     if (typeOfVar == 'Ambiguous'):
-                        text(str(lineNumber) + ': Warning, there may be any error on this line due to the ambigious nature of the variables')
+                        errorMap[lineNumber] = 'Warning, there may be any error on this line due to the ambigious nature of the variables'
                     if (typeOfVar == 'Error'):
-                        text(str(lineNumber) + ': Error, there is an error on this line caused by type mismatch')
+                        errorMap[lineNumber] = 'Error, there is an error on this line caused by type mismatch'
     # if printed is False:
         # with tag('p'):
             # text(code)
@@ -441,6 +445,7 @@ class Analyzer(ast.NodeVisitor):
                     D[self.fn_name][self.var_name][self.line_no] = "Something is broken, check code..."
             except:
                 print("Uninitialized variable", opt.lineno)
+                errorMap[opt.lineno] = "Uninitialized variable"
         elif isinstance(opt, ast.Constant):
             if self.unary_type_check(op, type(opt.value)):
                 D[self.fn_name][self.var_name][self.line_no] = {self.op_translate(op, opt.value)}
@@ -539,12 +544,15 @@ class Analyzer(ast.NodeVisitor):
                     return self.bin_helper_1_2(1, right, rt, lt, left, valid, op)
                 else:
                     print("case not covered, review code", left.lineno)
+                    errorMap[left.lineno] = "case not covered, review code"
             elif l_c and r_c:
                 return {self.bin_translator(op, self.type_checker(left, right))}
             else:
                 print("case not covered, review code", left.lineno)
+                errorMap[left.lineno] = "case not covered, review code"
         else:
             print("error, invalid binaryOp type", left.lineno)
+            errorMap[left.lineno] = "error, invalid binaryOp type"
             return "Error"
 
     def bin_helper_3(self, left, right, lt, rt, valid, op):
@@ -773,6 +781,7 @@ class Analyzer(ast.NodeVisitor):
                         keys.remove(np.max(keys))
                     else:
                         print("uninitialized variable, check code")
+                        errorMap[n.lineno] = "uninitialized variable, check code"
                     t = D[self.fn_name][v.id][np.max(keys)]
                 else:
                     if isinstance(v, ast.Constant):
@@ -826,6 +835,7 @@ class Analyzer(ast.NodeVisitor):
             # print(n.id, end=' ')
         except:
             print("Uninitialized Variable", n.id)
+            errorMap[n.lineno] = "Uninitialized Variable"
 
     def process_tuple(self, n):
         # print('tuple', end=' ')
