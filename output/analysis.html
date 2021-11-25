@@ -1,0 +1,27 @@
+<html><head><link rel="stylesheet" href="analysis.css" /><link rel="stylesheet" href="prism.css" /></head><body class="line-numbers"><script src="prism.js"></script><pre><code class="language-python">import random
+
+import numpy
+
+# test
+
+#test another comment
+
+<div class="tooltip"><mark class="Multiple">def foo(a, b):</mark><span class="tooltiptext"> Integer,  Float,  String </span></div>
+    
+    <mark class="Float">x</mark> = 20.0
+    if (a &gt; b):
+        <mark class="String">x</mark> = "str"
+    else:
+        <mark class="Integer">x</mark> = 66
+    return x
+
+def bar():
+    <mark class="Integer">a</mark> = 33
+    <mark class="Integer">b</mark> = 44
+    b = a = 55
+    <div class="tooltip"><mark class="Multiple">x</mark> = foo(44, 33)<span class="tooltiptext"> Integer,  Float,  String </span></div>
+
+    <mark class="Ambiguous">x</mark> += a
+    print(x)
+
+</code></pre><ul class="legend"><li><span class="Ambiguous"></span>Ambiguous</li><li><span class="List"></span>List</li><li><span class="Float"></span>Float</li><li><span class="String"></span>String</li><li><span class="Integer"></span>Integer</li><li><span class="Tuple"></span>Tuple</li><li><span class="Bool"></span>Bool</li><li><span class="Set"></span>Set</li><li><span class="Error"></span>Error</li><li><span class="Multiple"></span>Multiple</li></ul></body></html>

@@ -4,6 +4,7 @@ import numpy as np
 import json
 from yattag import Doc
 import matplotlib.pyplot as plt
+import re
 
 # TODO: write doc, include that you need to install yattag
 # {class name: {function name: {var name: {line number: possible type}}}}
@@ -12,13 +13,14 @@ C = {'Default': D}
 L = {}
 IdMap = {'Ambiguous' : 'Ambiguous', 
             '<class \'list\'>' : 'List', 
-            ' <class \'float\'>' : 'Float',
+            '<class \'float\'>' : 'Float',
             '<class \'str\'>' : 'String',
             '<class \'int\'>' : 'Integer',
             '<class \'tuple\'>' : 'Tuple',
             '<class \'bool\'>' : 'Bool',
             '<class \'set\'>'  : 'Set',
-            'Error' : 'Error'
+            'Error' : 'Error',
+            'Multiple': 'Multiple'
             }
 
 
@@ -77,14 +79,13 @@ def main():
     analyzer = Analyzer()
     analyzer.visit(tree)
 
-    print(C)
     htmlText = generateHighlightedCode(C['Default'], code.split('\n'))
-    # errorText = generateErrorReport(C['Default'], code.split('\n'))
+    errorText = generateErrorReport(C['Default'], code.split('\n'))
 
-    # with open("ErrorReport.html", "w") as file1:
-    #    file1.writelines(errorText)
+    with open("../output/ErrorReport.html", "w") as file1:
+        file1.writelines(errorText)
 
-    with open("analysis.html", "w") as file1:
+    with open("../output/analysis.html", "w") as file1:
         file1.writelines(htmlText)
     print(C)
 
@@ -95,7 +96,7 @@ def generateHighlightedCode(typeMapping, codeList):
         with tag('head'):
             doc.stag('link',rel='stylesheet', href='analysis.css')
             doc.stag('link',rel='stylesheet', href='prism.css')
-        with tag('body'):
+        with tag('body', klass='line-numbers'):
             with tag('script'):
                 doc.attr(src='prism.js')
             highlightCodeLines(typeMapping, codeList, lifetimeVariableMap, doc, tag, text)
@@ -105,7 +106,7 @@ def generateHighlightedCode(typeMapping, codeList):
                         line('span', '', klass = IdMap[key])
                         text(IdMap[key])
                             
-    # createGraphs(lifetimeVariableMap)
+    createGraphs(lifetimeVariableMap)
     return doc.getvalue()
 
 def highlightCodeLines(typeMapping, codeList, lifetimeVariableMap, doc, tag, text):
@@ -128,7 +129,7 @@ def highlightCodeLines(typeMapping, codeList, lifetimeVariableMap, doc, tag, tex
                         returnType = list(typeMapping[key]['return'].values())[0]
                         
                         tagID = getClassIdFromType(returnType)
-                        if (tagID == "multiple"):
+                        if (tagID == "Multiple"):
                             with tag('div', klass = 'tooltip'):
                                 with tag('mark', klass = tagID):
                                     text(code)
@@ -143,6 +144,7 @@ def highlightCodeLines(typeMapping, codeList, lifetimeVariableMap, doc, tag, tex
                     else:
                         text(code)
                 elif len(codeSplit) > 0 and codeSplit[0] == '#':
+                    text(f'{code}\n')
                     lineNumber += 1
                     continue
                 else:
@@ -156,7 +158,6 @@ def extractVariablesFromLine(codeLine, typeMap, lineNumber, functionVariableMap,
 
     printed = False
     for key in typeMap:
-        print(key)
         if (lineNumber in typeMap[key]):
             typeOfVar = typeMap[key][lineNumber]
             codeSplitByEqual = codeLine.split('=')
@@ -170,7 +171,7 @@ def extractVariablesFromLine(codeLine, typeMap, lineNumber, functionVariableMap,
                 else:
                     functionVariableMap[variableName] = [(lineNumber, typeOfVar)]
                 text(codeSplitByEqual[0][0:locVar])
-                if (classId == "multiple"):
+                if (classId == "Multiple"):
                     with tag('div', klass = 'tooltip'):
                         with tag('mark', klass = classId):
                             text(variableName)
@@ -193,16 +194,19 @@ def getClassIdFromType(typeOfVar):
         if (len(typeOfVar) == 1):
             return IdMap[str(next(iter(typeOfVar)))]
         else:
-            return "multiple"
+            return "Multiple"
     elif isinstance(typeOfVar, str):
         return IdMap[typeOfVar]
 
 
 def getNumParameters(codeSplit):
     methodName = codeSplit.split(" ", 1)[1]
-    if (len(methodName.split(", ")) == 1):
+    methodName = re.sub('\ ', '', methodName)
+    if(len(methodName.split("(")[1]) == 2):
         return 0
-    return len(methodName.split(", "))
+    if (len(methodName.split(",")) == 1):
+        return 1
+    return len(methodName.split(","))
 
 def createGraphs(lifetimeVariableMap):
     for key in lifetimeVariableMap:
@@ -223,7 +227,7 @@ def createGraphs(lifetimeVariableMap):
             plt.xlabel('Line Numbers')
             plt.ylabel('Type') 
             plt.plot(typeY, lineX, '.')
-            plt.show()
+            plt.savefig(f'../output/typeHistory-method-{key}-{variable}.png')
 def generateErrorReport(typeMapping, codeList):
     doc, tag, text = Doc().tagtext()
     with tag('html'):
@@ -239,7 +243,6 @@ def generateErrors(typeMapping, codeList, doc, tag, text):
     with tag('code'):
         text("Error Log")
         for code in codeList:
-            print(code)
             codeSplit = code.split()
             if (len(codeSplit) > 0 and codeSplit[0] == 'def'):
                 functionName = codeSplit[1].split('(')[0]
@@ -255,7 +258,6 @@ def generateErrors(typeMapping, codeList, doc, tag, text):
 def getErrorLineFromCode(code, typeMap, lineNumber, doc, tag, text):
     printed = False
     for key in typeMap:
-        print(key)
         if (lineNumber in typeMap[key]):
             typeOfVar = typeMap[key][lineNumber]
             codeSplitByEqual = code.split('=')

@@ -2,8 +2,13 @@ import random
 
 import numpy
 
+# test
+
+#test another comment
+
 def foo(a, b):
-    x = 20
+    
+    x = 20.0
     if (a > b):
         x = "str"
     else:
