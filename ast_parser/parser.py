@@ -155,7 +155,6 @@ def highlightCodeLines(typeMapping, codeList, lifetimeVariableMap, doc, tag, tex
 
 # get all variables that exist in map and their indicies
 def extractVariablesFromLine(codeLine, typeMap, lineNumber, functionVariableMap, doc, tag, text):
-
     printed = False
     for key in typeMap:
         if (lineNumber in typeMap[key]):
@@ -213,21 +212,24 @@ def createGraphs(lifetimeVariableMap):
         methodVariables = lifetimeVariableMap[key]
         for variable in methodVariables:
             variableList = methodVariables[variable]
-            lineX = []
-            typeY = []
-            for tuple in variableList:
-                typeY.append(tuple[0])
-                lineX.append(getClassIdFromType(tuple[1]))
-            y = ['list', 'float', 'str', 'int', 'tuple', 'bool', 'set', 'error']
-
+            lineNums = []
+            typeVars = []
+            y = list(IdMap.values())
+            print(y)
+            for tpl in variableList:
+                typeVars.append(y.index(getClassIdFromType(tpl[1])))
+                lineNums.append(tpl[0])
+            print(typeVars)
             fig, ax = plt.subplots(1,1)
+            # ax.set_yticks(range(0, len(y)))
+            print(len(y))
             ax.set_yticklabels(y)
-            
             plt.title('Type History of Variable ' + '<' + variable + '>' + ' in method ' + key)
             plt.xlabel('Line Numbers')
             plt.ylabel('Type') 
-            plt.plot(typeY, lineX, '.')
-            plt.savefig(f'../output/typeHistory-method-{key}-{variable}.png')
+            
+            plt.plot(lineNums, typeVars, '.')
+            plt.savefig(f'../output/typeHistory-method-{key}-{variable}.png', bbox_inches='tight')
 def generateErrorReport(typeMapping, codeList):
     doc, tag, text = Doc().tagtext()
     with tag('html'):
