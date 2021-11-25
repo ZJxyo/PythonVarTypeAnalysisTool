@@ -2,12 +2,27 @@ import ast
 import os
 import numpy as np
 import json
+from yattag import Doc
+import matplotlib.pyplot as plt
+import re
 
+# TODO: write doc, include that you need to install yattag
 # {class name: {function name: {var name: {line number: possible type}}}}
 D = {}
 C = {'Default': D}
 L = {}
-
+IdMap = {'Ambiguous' : 'Ambiguous', 
+            '<class \'list\'>' : 'List', 
+            '<class \'float\'>' : 'Float',
+            '<class \'str\'>' : 'String',
+            '<class \'int\'>' : 'Integer',
+            '<class \'tuple\'>' : 'Tuple',
+            '<class \'bool\'>' : 'Bool',
+            '<class \'set\'>'  : 'Set',
+            'Error' : 'Error',
+            'Multiple': 'Multiple'
+            }
+errorMap = {}
 
 def decode(obj):
     dup = {}
@@ -57,13 +72,219 @@ def main():
         C[c] = libs[c]
 
     file = os.path.join('..', 'input_files', 'input1.py')
+    code = ""
     with open(file, 'r') as source:
-        tree = ast.parse(source.read())
+        code = source.read()
+    tree = ast.parse(code)
     analyzer = Analyzer()
     analyzer.visit(tree)
 
+    htmlText = generateHighlightedCode(C['Default'], code.split('\n'))
+    errorText = generateErrorReport(C['Default'], code.split('\n'))
+
+    with open("../output/ErrorReport.html", "w") as file1:
+        file1.writelines(errorText)
+
+    with open("../output/analysis.html", "w") as file1:
+        file1.writelines(htmlText)
     print(C)
 
+def generateHighlightedCode(typeMapping, codeList):
+    doc, tag, text, line = Doc().ttl()
+    lifetimeVariableMap = {}
+    with tag('html'):
+        with tag('head'):
+            doc.stag('link',rel='stylesheet', href='analysis.css')
+            doc.stag('link',rel='stylesheet', href='prism.css')
+        with tag('body', klass='line-numbers'):
+            with tag('script'):
+                doc.attr(src='prism.js')
+            highlightCodeLines(typeMapping, codeList, lifetimeVariableMap, doc, tag, text)
+            with tag('ul', klass = 'legend'):
+                for key in IdMap:
+                    with tag('li'):
+                        line('span', '', klass = IdMap[key])
+                        text(IdMap[key])
+                            
+    createGraphs(lifetimeVariableMap)
+    return doc.getvalue()
+
+def highlightCodeLines(typeMapping, codeList, lifetimeVariableMap, doc, tag, text):
+    functionTypeMap = {}
+    lineNumber = 1
+    functionName  = ''
+    functionVariableMap = {}
+    with tag('pre'):
+        with tag('code', klass='language-python'):
+            for code in codeList:
+                codeSplit = code.split()
+                if (len(codeSplit) > 0 and codeSplit[0] == 'def'):
+                    functionName = codeSplit[1].split('(')[0]
+                    numParameters = getNumParameters(code)
+                    key = functionName + '|' + str(numParameters)
+                    functionTypeMap = typeMapping[key]
+                    functionVariableMap = {}
+
+                    if ('return' in typeMapping[key]): 
+                        returnType = list(typeMapping[key]['return'].values())[0]
+                        
+                        tagID = getClassIdFromType(returnType)
+                        if (tagID == "Multiple"):
+                            with tag('div', klass = 'tooltip'):
+                                with tag('mark', klass = tagID):
+                                    text(code)
+                                with tag('span', klass = 'tooltiptext'):
+                                    tooltipList = ''
+                                    for varType in returnType:
+                                        tooltipList = f'{tooltipList} {IdMap[str(varType)]}, '
+                                    text(f'{tooltipList[:-2]} ')
+                        else:
+                            with tag('mark', klass = tagID ):
+                                text(code)
+                    else:
+                        text(code)
+                elif len(codeSplit) > 0 and codeSplit[0] == '#':
+                    text(f'{code}\n')
+                    lineNumber += 1
+                    continue
+                else:
+                    extractVariablesFromLine(code, functionTypeMap, lineNumber, functionVariableMap, doc, tag, text)
+                    lifetimeVariableMap[functionName] =  functionVariableMap
+                lineNumber += 1
+                text('\n')
+
+# get all variables that exist in map and their indicies
+def extractVariablesFromLine(codeLine, typeMap, lineNumber, functionVariableMap, doc, tag, text):
+    printed = False
+    for key in typeMap:
+        if (lineNumber in typeMap[key]):
+            typeOfVar = typeMap[key][lineNumber]
+            codeSplitByEqual = codeLine.split('=')
+            if (len(codeSplitByEqual) == 2):
+                printed = True
+                classId = getClassIdFromType(typeOfVar)
+                locVar = codeSplitByEqual[0].index(key)
+                variableName = codeSplitByEqual[0][locVar:locVar+len(key)]
+                if (variableName in functionVariableMap):
+                    functionVariableMap[variableName].append((lineNumber, typeOfVar))
+                else:
+                    functionVariableMap[variableName] = [(lineNumber, typeOfVar)]
+                text(codeSplitByEqual[0][0:locVar])
+                if (classId == "Multiple"):
+                    with tag('div', klass = 'tooltip'):
+                        with tag('mark', klass = classId):
+                            text(variableName)
+                        text(f'{codeSplitByEqual[0][locVar+len(key):]}={codeSplitByEqual[1]}')
+                        with tag('span', klass = 'tooltiptext'):
+                            tooltipList = ''
+                            for varType in typeOfVar:
+                                tooltipList = f'{tooltipList} {IdMap[str(varType)]}, '
+                            text(f'{tooltipList[:-2]} ')
+                else:
+                    with tag('mark', klass = classId):
+                        text(variableName)
+                    text(f'{codeSplitByEqual[0][locVar+len(key):]}={codeSplitByEqual[1]}')
+    if printed is False:
+        text(codeLine)
+            # TODO: support lines such as b = a = 35
+
+def getClassIdFromType(typeOfVar):
+    if isinstance(typeOfVar, set):
+        if (len(typeOfVar) == 1):
+            return IdMap[str(next(iter(typeOfVar)))]
+        else:
+            return "Multiple"
+    elif isinstance(typeOfVar, str):
+        return IdMap[typeOfVar]
+
+
+def getNumParameters(codeSplit):
+    methodName = codeSplit.split(" ", 1)[1]
+    methodName = re.sub('\ ', '', methodName)
+    if(len(methodName.split("(")[1]) == 2):
+        return 0
+    if (len(methodName.split(",")) == 1):
+        return 1
+    return len(methodName.split(","))
+
+def createGraphs(lifetimeVariableMap):
+    for key in lifetimeVariableMap:
+        methodVariables = lifetimeVariableMap[key]
+        for variable in methodVariables:
+            variableList = methodVariables[variable]
+            lineNums = []
+            typeVars = []
+            y = list(IdMap.values())
+            print(y)
+            for tpl in variableList:
+                typeVars.append(y.index(getClassIdFromType(tpl[1])))
+                lineNums.append(tpl[0])
+            print(typeVars)
+            fig, ax = plt.subplots(1,1)
+            # ax.set_yticks(range(0, len(y)))
+            print(len(y))
+            ax.set_yticklabels(y)
+            plt.title('Type History of Variable ' + '<' + variable + '>' + ' in method ' + key)
+            plt.xlabel('Line Numbers')
+            plt.ylabel('Type') 
+            
+            plt.plot(lineNums, typeVars, '.')
+            plt.savefig(f'../output/typeHistory-method-{key}-{variable}.png', bbox_inches='tight')
+def generateErrorReport(typeMapping, codeList):
+    doc, tag, text = Doc().tagtext()
+    with tag('html'):
+        with tag('head'):
+            doc.stag('link',rel='stylesheet', href='error.css')
+    with tag('body'):
+            generateErrors(typeMapping, codeList, doc, tag, text)
+    return doc.getvalue()
+
+def generateErrors(typeMapping, codeList, doc, tag, text):
+    functionTypeMap = {}
+    lineNumber = 1
+    with tag('code'):
+        text("Error Log")
+        for code in codeList:
+            codeSplit = code.split()
+            if (len(codeSplit) > 0 and codeSplit[0] == 'def'):
+                functionName = codeSplit[1].split('(')[0]
+                numParameters = getNumParameters(code)
+                key = functionName + '|' + str(numParameters)
+                functionTypeMap = typeMapping[key]
+            elif len(codeSplit) > 0 and codeSplit[0] == '#':
+                lineNumber += 1
+                continue
+            else:
+                getErrorLineFromCode(code, functionTypeMap, lineNumber, doc, tag, text)
+            lineNumber += 1
+        for key in sorted(errorMap):
+            with tag('p'):
+                text(f"{str(key)}: {errorMap[key]}")
+
+def getErrorLineFromCode(code, typeMap, lineNumber, doc, tag, text):
+    printed = False
+    for key in typeMap:
+        if (lineNumber in typeMap[key]):
+            typeOfVar = typeMap[key][lineNumber]
+            codeSplitByEqual = code.split('=')
+            if (len(codeSplitByEqual) == 2):
+                printed = True
+                classId = getClassIdFromType(typeOfVar)
+                with tag('p', klass = classId):
+                    locVar = codeSplitByEqual[0].index(key)
+                    # text(codeSplitByEqual[0][0:locVar])
+                    # with tag('mark'):
+                        # text(codeSplitByEqual[0][locVar:locVar+len(key)])
+                    # text(f'{codeSplitByEqual[0][locVar+len(key):]}={codeSplitByEqual[1]}')
+                    if (typeOfVar == 'Ambiguous'):
+                        errorMap[lineNumber] = 'Warning, there may be any error on this line due to the ambigious nature of the variables'
+                    if (typeOfVar == 'Error'):
+                        errorMap[lineNumber] = 'Error, there is an error on this line caused by type mismatch'
+    # if printed is False:
+        # with tag('p'):
+            # text(code)
+            # TODO: support multiple 
+            # TODO: hover functionality if multiple types
 
 class Analyzer(ast.NodeVisitor):
     # list of valid type
@@ -224,6 +445,7 @@ class Analyzer(ast.NodeVisitor):
                     D[self.fn_name][self.var_name][self.line_no] = "Something is broken, check code..."
             except:
                 print("Uninitialized variable", opt.lineno)
+                errorMap[opt.lineno] = "Uninitialized variable"
         elif isinstance(opt, ast.Constant):
             if self.unary_type_check(op, type(opt.value)):
                 D[self.fn_name][self.var_name][self.line_no] = {self.op_translate(op, opt.value)}
@@ -322,12 +544,15 @@ class Analyzer(ast.NodeVisitor):
                     return self.bin_helper_1_2(1, right, rt, lt, left, valid, op)
                 else:
                     print("case not covered, review code", left.lineno)
+                    errorMap[left.lineno] = "case not covered, review code"
             elif l_c and r_c:
                 return {self.bin_translator(op, self.type_checker(left, right))}
             else:
                 print("case not covered, review code", left.lineno)
+                errorMap[left.lineno] = "case not covered, review code"
         else:
             print("error, invalid binaryOp type", left.lineno)
+            errorMap[left.lineno] = "error, invalid binaryOp type"
             return "Error"
 
     def bin_helper_3(self, left, right, lt, rt, valid, op):
@@ -556,6 +781,7 @@ class Analyzer(ast.NodeVisitor):
                         keys.remove(np.max(keys))
                     else:
                         print("uninitialized variable, check code")
+                        errorMap[n.lineno] = "uninitialized variable, check code"
                     t = D[self.fn_name][v.id][np.max(keys)]
                 else:
                     if isinstance(v, ast.Constant):
@@ -609,6 +835,7 @@ class Analyzer(ast.NodeVisitor):
             # print(n.id, end=' ')
         except:
             print("Uninitialized Variable", n.id)
+            errorMap[n.lineno] = "Uninitialized Variable"
 
     def process_tuple(self, n):
         # print('tuple', end=' ')
