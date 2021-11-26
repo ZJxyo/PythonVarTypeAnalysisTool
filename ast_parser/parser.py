@@ -75,6 +75,9 @@ def main():
     for c in libs:
         C[c] = libs[c]
 
+    transfer_tatic()
+    print(C)
+
     file = os.path.join('..', 'input_files', 'input1.py')
     code = ""
     with open(file, 'r') as source:
@@ -82,6 +85,8 @@ def main():
     tree = ast.parse(code)
     analyzer = Analyzer()
     analyzer.visit(tree)
+
+    remove_static()
 
     htmlText = generateHighlightedCode(C['Default'], code.split('\n'))
     errorText = generateErrorReport(C['Default'], code.split('\n'))
@@ -96,6 +101,16 @@ def main():
     createFlowChart()
     groupPages()
 
+def transfer_tatic():
+    if 'static' in C:
+        for fn in C['static']:
+            D[fn] = C['static'][fn]
+
+def remove_static():
+    if 'static' in C:
+        for fn in C['static']:
+            if fn in D:
+                D.pop(fn)
 
 def groupPages():
     doc, tag, text = Doc().tagtext()
@@ -947,6 +962,8 @@ class Analyzer(ast.NodeVisitor):
     def process_name(self, n):
         try:
             keys = list(D[self.fn_name][n.id].keys())
+            if np.max(keys) == n.lineno and len(keys) > 1:
+                keys.remove(np.max(keys))
             D[self.fn_name][self.var_name][n.lineno] = D[self.fn_name][n.id][np.max(keys)]
             # print(n.id, end=' ')
         except:
@@ -986,7 +1003,10 @@ class Analyzer(ast.NodeVisitor):
 
     def process_call(self, n):
         if isinstance(n.func, ast.Name):
-            self.process_call_param(n)
+            if n.func.id + '|' + str(len(n.args)) in C['static']:
+                self.process_call_rt_update(n, 0)
+            else:
+                self.process_call_param(n)
         else:
             self.process_call_rt_update(n, 0)
 
