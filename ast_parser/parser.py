@@ -5,6 +5,8 @@ import json
 from yattag import Doc
 import matplotlib.pyplot as plt
 import re
+import graphviz
+import glob
 
 # TODO: write doc, include that you need to install yattag
 # {class name: {function name: {var name: {line number: possible type}}}}
@@ -17,8 +19,9 @@ IdMap = {'Ambiguous' : 'Ambiguous',
             '<class \'str\'>' : 'String',
             '<class \'int\'>' : 'Integer',
             '<class \'tuple\'>' : 'Tuple',
-            '<class \'bool\'>' : 'Bool',
+            '<class \'bool\'>' : 'Boolean',
             '<class \'set\'>'  : 'Set',
+            '<class \'dict\'>'  : 'Dictionary',
             'Error' : 'Error',
             'Multiple': 'Multiple'
             }
@@ -88,6 +91,73 @@ def main():
     with open("../output/analysis.html", "w") as file1:
         file1.writelines(htmlText)
     print(C)
+
+    createFlowChart()
+
+
+def createFlowChart():
+    files = glob.glob('../output/flowchart/*')
+    for f in files:
+        os.remove(f)
+
+    for fn in D:
+        lfn = []
+        fn_s = fn.split("|")[0]
+        fn_i = int(fn.split("|")[1])
+        param = ''
+        for i in range(fn_i + 1):
+            param += ('arg' + str(i) + ',')
+
+        fn_new = fn_s + '(' + param[0:(len(param) - 1)] + ')'
+        for var in D[fn]:
+            prev = None
+            g = graphviz.Digraph(filename=f'../output/flowchart/flowchart_{fn_new}_{var}.gv', format='png')
+            lfn.append(f'../output/flowchart/flowchart_{fn_new}_{var}.gv.png')
+            if var == 'return':
+                g.attr(label=f'Return Type')
+            else:
+                g.attr(label=f'Variable < {var} >')
+            g.attr('node', shape='box')
+
+
+            for ln_no in D[fn][var]:
+                if ln_no < 0:
+                    new_ln_no = "arg" + str(np.abs(ln_no) - 1)
+                else:
+                    new_ln_no = str(ln_no)
+                tp_s = []
+                if isinstance(D[fn][var][ln_no], set):
+                    for tp in D[fn][var][ln_no]:
+                        tp_s.append(IdMap[str(tp)])
+                else:
+                    tp_s.append(tp)
+
+                g.node(str(ln_no), new_ln_no + ": " + re.sub('\[|\]|\'', '', str(tp_s)))
+                if prev is not None:
+                    g.edge(prev, str(ln_no))
+                prev = str(ln_no)
+
+            g.render()
+
+        for i in range(len(lfn)):
+            lfn[i] = re.sub('../output/flowchart/', '', lfn[i])
+
+        doc, tag, text = Doc().tagtext()
+
+        with tag('html'):
+            with tag('body'):
+                with tag('h1'):
+                    text("Function " + fn_new + " Type History")
+                for fn in lfn:
+                    doc.stag('img', src=fn)
+                    doc.stag('br')
+                    doc.stag('br')
+
+        result = doc.getvalue()
+
+        with open(f"../output/flowchart/flowchart_{fn_new}.html", "w") as file1:
+            file1.writelines(result)
+
 
 def generateHighlightedCode(typeMapping, codeList):
     doc, tag, text, line = Doc().ttl()
