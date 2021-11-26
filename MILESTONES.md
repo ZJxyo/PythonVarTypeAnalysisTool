@@ -214,7 +214,7 @@ g: not sure
 #### How did you find the type of the parameters? Random guesses? Derived from code? Intuition?
 “Since the parameters are assigned with value, we can know the type of it” - derived from code.
 -The program is simple and therefore the participant managed to derive the types without much effort.
-![](https://media.github.students.cs.ubc.ca/user/1447/files/98252200-43fd-11ec-8340-cf71c1ba500d)
+![](https://github.students.cs.ubc.ca/cpsc410-2021w-t1/Project2Group17/blob/master/image.png)
 
 #### Find the type of the parameters b, c, d, e, f and g base on the analysis result.
 Same result as above
