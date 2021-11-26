@@ -194,42 +194,43 @@ We implemented a functionality that loads a map from a JSON file with the format
 ```
 
 #### Are you new to Python, or are you an experienced Python user? On a scale of 0 to 5, rate how well you know Python.
-The participant did learn Python in the past yet he is still relatively inexperienced with Python.
+> The participant did learn Python in the past however he is still relatively inexperienced with Python.
 #### Find the type of the parameters b, c, d, e, f and g.</br>
-b: int
-c: float
-d: string
-e: float
-f: string
-k: boolean
-g: not sure
+> b: int
+> c: float
+> d: string
+> e: float
+> f: string
+> k: boolean
+> g: not sure
 #### What’s the return type of foo?
-“Might be string”
+> “Might be string”
 #### What’s the return type of boo?
-“int”
+> “int”
 #### What type should a be?
-“string”
+> “string”
 #### What type should arg be?
-“int”
+> “int”
 #### How did you find the type of the parameters? Random guesses? Derived from code? Intuition?
-“Since the parameters are assigned with value, we can know the type of it” - derived from code.
--The program is simple and therefore the participant managed to derive the types without much effort.
+> “Since the parameters are assigned with value, we can know the type of it. Derived from code.”
+
+- The program is simple and therefore the participant managed to derive the types without too much trouble.
+
 ![](https://github.students.cs.ubc.ca/cpsc410-2021w-t1/Project2Group17/blob/master/image.png)
 
 #### Find the type of the parameters b, c, d, e, f and g base on the analysis result.
-Same result as above
+> Same result as above
 #### What’s the return type of foo?
-“The highlight on foo indicates that it is returning a string whereas the participant believes that it should return an int instead.”
-- This is in fact our mistake, needs to modify function_return.json
+> “The highlight on boo indicates that it is returning a string whereas the participant believes that it should return an int instead.”
+- The wrong return type was stored in function_return.json.
 #### What’s the return type of boo?
-"string"
+> "string"
 #### What type should a be?
-"str"
+> "str"
 #### What type should arg be?
-"int"
-#### Did you make any changes?
-The participant also spotted the mistake on line 17 after looking at the error log.
-#### What is the reason behind each change you made?
+> "int"
+#### Any changes from part 1?
+> The participant spotted the mistake on line 17 after looking at the error log.
 
 #### Suggestions/problems from the participant
 
