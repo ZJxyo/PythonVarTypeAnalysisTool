@@ -405,10 +405,10 @@ def getErrorLineFromCode(code, typeMap, lineNumber, doc, tag, text):
                     # with tag('mark'):
                     # text(codeSplitByEqual[0][locVar:locVar+len(key)])
                     # text(f'{codeSplitByEqual[0][locVar+len(key):]}={codeSplitByEqual[1]}')
-                    if (typeOfVar == 'Ambiguous'):
+                    if (typeOfVar == 'Ambiguous') and lineNumber not in errorMap:
                         errorMap[
                             lineNumber] = 'Warning, there may be any error on this line due to the ambigious nature of the variables'
-                    if (typeOfVar == 'Error'):
+                    if (typeOfVar == 'Error') and lineNumber not in errorMap:
                         errorMap[lineNumber] = 'Error, there is an error on this line caused by type mismatch'
     # if printed is False:
     # with tag('p'):
@@ -584,6 +584,7 @@ class Analyzer(ast.NodeVisitor):
                 D[self.fn_name][self.var_name][self.line_no] = "Error"
         else:
             print("not an unary operator type")
+            errorMap[opt.lineno] = "not an unary operator type"
 
     def op_translate(self, op, v):
         if op == "-":
@@ -698,6 +699,7 @@ class Analyzer(ast.NodeVisitor):
         if (len(types_r) > 1 or len(types_l) > 1) or (len(types_r) == 1 and len(types_l) == 1):
             return self.bin_helper_3_helper(types_l, types_r, valid, op, left, right)
         else:
+            errorMap[left.lineno] = "case not covered, review code"
             print("Something is broken, check code...")
 
     def bin_helper_types(self, o, lt, rt, case):
@@ -715,6 +717,7 @@ class Analyzer(ast.NodeVisitor):
             elif case == 1:
                 return rt
             else:
+                errorMap[o.lineno] = "case not covered, review code"
                 print("something broke")
 
     def bin_helper_3_helper(self, types_l, types_r, valid, op, left, right):
@@ -771,6 +774,7 @@ class Analyzer(ast.NodeVisitor):
         if len(types) >= 1:
             return self.bin_helper_helper(types, v, case, valid, op, o)
         else:
+            errorMap[o.lineno] = "case not covered, review code"
             print("Something is broken, check code...")
 
     def param_check(self, n):
@@ -923,6 +927,7 @@ class Analyzer(ast.NodeVisitor):
                         t = {tuple}
                     else:
                         print("case not covered")
+                        errorMap[n.lineno] = "case not covered, review code"
                 cur = self.bool_translator(cur, t, n.op)
         return cur
 
@@ -954,6 +959,7 @@ class Analyzer(ast.NodeVisitor):
                 return {type(self.bin_type_translator(a) or self.bin_type_translator(b))}
             else:
                 print("Something broke")
+                errorMap[op.lineno] = "case not covered, review code"
 
     def process_constant(self, n):
         D[self.fn_name][self.var_name][self.line_no].add(type(n.value))
@@ -1060,6 +1066,7 @@ class Analyzer(ast.NodeVisitor):
             else:
                 self.process_call_rt_update(n, 0)
         else:
+            errorMap[n.lineno] = "case not covered, review code"
             print("review code, case not covered")
 
     def call_param_type(self, types, fn, num):
@@ -1084,6 +1091,7 @@ class Analyzer(ast.NodeVisitor):
             else:
                 return 0
         else:
+            errorMap[self.line_no] = "function does not exist"
             print("function does not exist")
 
     def attr_to_string(self, attr):
@@ -1117,6 +1125,7 @@ class Analyzer(ast.NodeVisitor):
                 else:
                     return 'Error' + '.' + attr.attr
             else:
+                errorMap[attr.lineno] = "case not covered, review code"
                 print("review code, case not covered")
         else:
             return self.attr_to_string(attr.value) + '.' + attr.attr
@@ -1148,16 +1157,17 @@ class Analyzer(ast.NodeVisitor):
         if class_name in C.keys():
             if fn_name in C[class_name].keys():
                 if 'return' in C[class_name][fn_name].keys():
-                    print(class_name, fn_name, )
                     return C[class_name][fn_name]['return'][0]
                 else:
-                    print("not a return function")
+                    errorMap[self.line_no] = "not a return function"
                     return D[self.fn_name][self.var_name][self.line_no]
             else:
                 print("no such function")
+                errorMap[self.line_no] = "no such function"
                 return 'Error'
         else:
             print("class not found")
+            errorMap[self.line_no] = "no such function"
             return 'Error'
 
     def process_call_rt_update(self, n, rt):
@@ -1183,12 +1193,14 @@ class Analyzer(ast.NodeVisitor):
                             D[self.fn_name][self.var_name][self.line_no] = D[fn_name]['return'][ln]
                 else:
                     print("not a return function")
+                    errorMap[self.line_no] = "not a return function"
                     if rt:
                         return "Error"
                     else:
                         D[self.fn_name][self.var_name][self.line_no] = "Error"
         else:
             print("review code, case not covered")
+            errorMap[self.line_no] = "review code, case not covered"
             if rt:
                 return "Error"
             else:
