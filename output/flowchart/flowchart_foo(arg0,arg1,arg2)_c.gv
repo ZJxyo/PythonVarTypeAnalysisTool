@@ -1,0 +1,5 @@
+digraph {
+	label="Variable < c >"
+	node [shape=box]
+	3 [label="3: Float"]
+}

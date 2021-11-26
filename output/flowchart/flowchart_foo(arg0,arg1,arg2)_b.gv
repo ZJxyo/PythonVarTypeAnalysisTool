@@ -1,0 +1,11 @@
+digraph {
+	label="Variable < b >"
+	node [shape=box]
+	2 [label="2: Integer"]
+	9 [label="9: Float"]
+	2 -> 9
+	11 [label="11: String"]
+	9 -> 11
+	11.5 [label="11.5: Integer, Float, String"]
+	11 -> 11.5
+}

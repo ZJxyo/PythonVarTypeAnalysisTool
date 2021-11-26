@@ -1,0 +1,5 @@
+digraph {
+	label="Variable < k >"
+	node [shape=box]
+	7 [label="7: Boolean"]
+}

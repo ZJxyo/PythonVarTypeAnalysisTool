@@ -13,19 +13,20 @@ import glob
 D = {}
 C = {'Default': D}
 L = {}
-IdMap = {'Ambiguous' : 'Ambiguous', 
-            '<class \'list\'>' : 'List', 
-            '<class \'float\'>' : 'Float',
-            '<class \'str\'>' : 'String',
-            '<class \'int\'>' : 'Integer',
-            '<class \'tuple\'>' : 'Tuple',
-            '<class \'bool\'>' : 'Boolean',
-            '<class \'set\'>'  : 'Set',
-            '<class \'dict\'>'  : 'Dictionary',
-            'Error' : 'Error',
-            'Multiple': 'Multiple'
-            }
+IdMap = {'Ambiguous': 'Ambiguous',
+         '<class \'list\'>': 'List',
+         '<class \'float\'>': 'Float',
+         '<class \'str\'>': 'String',
+         '<class \'int\'>': 'Integer',
+         '<class \'tuple\'>': 'Tuple',
+         '<class \'bool\'>': 'Boolean',
+         '<class \'set\'>': 'Set',
+         '<class \'dict\'>': 'Dictionary',
+         'Error': 'Error',
+         'Multiple': 'Multiple'
+         }
 errorMap = {}
+
 
 def decode(obj):
     dup = {}
@@ -85,14 +86,48 @@ def main():
     htmlText = generateHighlightedCode(C['Default'], code.split('\n'))
     errorText = generateErrorReport(C['Default'], code.split('\n'))
 
-    with open("../output/ErrorReport.html", "w") as file1:
+    with open("../output/error_report/ErrorReport.html", "w") as file1:
         file1.writelines(errorText)
 
-    with open("../output/analysis.html", "w") as file1:
+    with open("../output/analysis/analysis.html", "w") as file1:
         file1.writelines(htmlText)
     print(C)
 
     createFlowChart()
+    groupPages()
+
+
+def groupPages():
+    doc, tag, text = Doc().tagtext()
+
+    with tag('html'):
+        with tag('body'):
+            with tag('h2'):
+                with tag('a', href='analysis/analysis.html'):
+                    text("Type Analysis Highlighting")
+                doc.stag('br')
+                doc.stag('br')
+            with tag('h2'):
+                with tag('a', href='error_report/ErrorReport.html'):
+                    text("Error Report")
+                doc.stag('br')
+                doc.stag('br')
+            files = glob.glob('../output/flowchart/*')
+            for f in files:
+                if f.title().split(".")[-1] == "Html":
+                    link = f.title().split("/")[-1].lower()
+                    link = re.sub(r'\\', '/', link)
+                    with tag('h2'):
+                        with tag('a', href=link):
+                            name = f.title().split("\\")[-1].split('.')[0].split('_')
+                            text(name[0] + " for " + name[1].lower())
+                        doc.stag('br')
+                        doc.stag('br')
+
+    result = doc.getvalue()
+
+    with open(f"../output/Main.html", "w") as file1:
+        file1.writelines(result)
 
 
 def createFlowChart():
@@ -119,7 +154,6 @@ def createFlowChart():
                 g.attr(label=f'Variable < {var} >')
             g.attr('node', shape='box')
 
-
             for ln_no in D[fn][var]:
                 if ln_no < 0:
                     new_ln_no = "arg" + str(np.abs(ln_no) - 1)
@@ -130,7 +164,7 @@ def createFlowChart():
                     for tp in D[fn][var][ln_no]:
                         tp_s.append(IdMap[str(tp)])
                 else:
-                    tp_s.append(tp)
+                    tp_s.append(D[fn][var][ln_no])
 
                 g.node(str(ln_no), new_ln_no + ": " + re.sub('\[|\]|\'', '', str(tp_s)))
                 if prev is not None:
@@ -164,25 +198,26 @@ def generateHighlightedCode(typeMapping, codeList):
     lifetimeVariableMap = {}
     with tag('html'):
         with tag('head'):
-            doc.stag('link',rel='stylesheet', href='analysis.css')
-            doc.stag('link',rel='stylesheet', href='prism.css')
+            doc.stag('link', rel='stylesheet', href='analysis.css')
+            doc.stag('link', rel='stylesheet', href='prism.css')
         with tag('body', klass='line-numbers'):
             with tag('script'):
                 doc.attr(src='prism.js')
             highlightCodeLines(typeMapping, codeList, lifetimeVariableMap, doc, tag, text)
-            with tag('ul', klass = 'legend'):
+            with tag('ul', klass='legend'):
                 for key in IdMap:
                     with tag('li'):
-                        line('span', '', klass = IdMap[key])
+                        line('span', '', klass=IdMap[key])
                         text(IdMap[key])
-                            
+
     createGraphs(lifetimeVariableMap)
     return doc.getvalue()
+
 
 def highlightCodeLines(typeMapping, codeList, lifetimeVariableMap, doc, tag, text):
     functionTypeMap = {}
     lineNumber = 1
-    functionName  = ''
+    functionName = ''
     functionVariableMap = {}
     with tag('pre'):
         with tag('code', klass='language-python'):
@@ -195,21 +230,21 @@ def highlightCodeLines(typeMapping, codeList, lifetimeVariableMap, doc, tag, tex
                     functionTypeMap = typeMapping[key]
                     functionVariableMap = {}
 
-                    if ('return' in typeMapping[key]): 
+                    if ('return' in typeMapping[key]):
                         returnType = list(typeMapping[key]['return'].values())[0]
-                        
+
                         tagID = getClassIdFromType(returnType)
                         if (tagID == "Multiple"):
-                            with tag('div', klass = 'tooltip'):
-                                with tag('mark', klass = tagID):
+                            with tag('div', klass='tooltip'):
+                                with tag('mark', klass=tagID):
                                     text(code)
-                                with tag('span', klass = 'tooltiptext'):
+                                with tag('span', klass='tooltiptext'):
                                     tooltipList = ''
                                     for varType in returnType:
                                         tooltipList = f'{tooltipList} {IdMap[str(varType)]}, '
                                     text(f'{tooltipList[:-2]} ')
                         else:
-                            with tag('mark', klass = tagID ):
+                            with tag('mark', klass=tagID):
                                 text(code)
                     else:
                         text(code)
@@ -219,9 +254,10 @@ def highlightCodeLines(typeMapping, codeList, lifetimeVariableMap, doc, tag, tex
                     continue
                 else:
                     extractVariablesFromLine(code, functionTypeMap, lineNumber, functionVariableMap, doc, tag, text)
-                    lifetimeVariableMap[functionName] =  functionVariableMap
+                    lifetimeVariableMap[functionName] = functionVariableMap
                 lineNumber += 1
                 text('\n')
+
 
 # get all variables that exist in map and their indicies
 def extractVariablesFromLine(codeLine, typeMap, lineNumber, functionVariableMap, doc, tag, text):
@@ -234,29 +270,30 @@ def extractVariablesFromLine(codeLine, typeMap, lineNumber, functionVariableMap,
                 printed = True
                 classId = getClassIdFromType(typeOfVar)
                 locVar = codeSplitByEqual[0].index(key)
-                variableName = codeSplitByEqual[0][locVar:locVar+len(key)]
+                variableName = codeSplitByEqual[0][locVar:locVar + len(key)]
                 if (variableName in functionVariableMap):
                     functionVariableMap[variableName].append((lineNumber, typeOfVar))
                 else:
                     functionVariableMap[variableName] = [(lineNumber, typeOfVar)]
                 text(codeSplitByEqual[0][0:locVar])
                 if (classId == "Multiple"):
-                    with tag('div', klass = 'tooltip'):
-                        with tag('mark', klass = classId):
+                    with tag('div', klass='tooltip'):
+                        with tag('mark', klass=classId):
                             text(variableName)
-                        text(f'{codeSplitByEqual[0][locVar+len(key):]}={codeSplitByEqual[1]}')
-                        with tag('span', klass = 'tooltiptext'):
+                        text(f'{codeSplitByEqual[0][locVar + len(key):]}={codeSplitByEqual[1]}')
+                        with tag('span', klass='tooltiptext'):
                             tooltipList = ''
                             for varType in typeOfVar:
                                 tooltipList = f'{tooltipList} {IdMap[str(varType)]}, '
                             text(f'{tooltipList[:-2]} ')
                 else:
-                    with tag('mark', klass = classId):
+                    with tag('mark', klass=classId):
                         text(variableName)
-                    text(f'{codeSplitByEqual[0][locVar+len(key):]}={codeSplitByEqual[1]}')
+                    text(f'{codeSplitByEqual[0][locVar + len(key):]}={codeSplitByEqual[1]}')
     if printed is False:
         text(codeLine)
-            # TODO: support lines such as b = a = 35
+        # TODO: support lines such as b = a = 35
+
 
 def getClassIdFromType(typeOfVar):
     if isinstance(typeOfVar, set):
@@ -271,13 +308,18 @@ def getClassIdFromType(typeOfVar):
 def getNumParameters(codeSplit):
     methodName = codeSplit.split(" ", 1)[1]
     methodName = re.sub('\ ', '', methodName)
-    if(len(methodName.split("(")[1]) == 2):
+    if (len(methodName.split("(")[1]) == 2):
         return 0
     if (len(methodName.split(",")) == 1):
         return 1
     return len(methodName.split(","))
 
+
 def createGraphs(lifetimeVariableMap):
+    files = glob.glob('../output/type_history_scatter/*')
+    for f in files:
+        os.remove(f)
+
     for key in lifetimeVariableMap:
         methodVariables = lifetimeVariableMap[key]
         for variable in methodVariables:
@@ -285,29 +327,30 @@ def createGraphs(lifetimeVariableMap):
             lineNums = []
             typeVars = []
             y = list(IdMap.values())
-            print(y)
             for tpl in variableList:
                 typeVars.append(y.index(getClassIdFromType(tpl[1])))
                 lineNums.append(tpl[0])
-            print(typeVars)
-            fig, ax = plt.subplots(1,1)
-            # ax.set_yticks(range(0, len(y)))
-            print(len(y))
+            # print(typeVars)
+            fig, ax = plt.subplots(1, 1)
+            ax.set_yticks(range(0, len(y)))
             ax.set_yticklabels(y)
             plt.title('Type History of Variable ' + '<' + variable + '>' + ' in method ' + key)
             plt.xlabel('Line Numbers')
-            plt.ylabel('Type') 
-            
+            plt.ylabel('Type')
+
             plt.plot(lineNums, typeVars, '.')
-            plt.savefig(f'../output/typeHistory-method-{key}-{variable}.png', bbox_inches='tight')
+            plt.savefig(f'../output/type_history_scatter/typeHistory-method-{key}-{variable}.png', bbox_inches='tight')
+
+
 def generateErrorReport(typeMapping, codeList):
     doc, tag, text = Doc().tagtext()
     with tag('html'):
         with tag('head'):
-            doc.stag('link',rel='stylesheet', href='error.css')
+            doc.stag('link', rel='stylesheet', href='error.css')
     with tag('body'):
-            generateErrors(typeMapping, codeList, doc, tag, text)
+        generateErrors(typeMapping, codeList, doc, tag, text)
     return doc.getvalue()
+
 
 def generateErrors(typeMapping, codeList, doc, tag, text):
     functionTypeMap = {}
@@ -331,6 +374,7 @@ def generateErrors(typeMapping, codeList, doc, tag, text):
             with tag('p'):
                 text(f"{str(key)}: {errorMap[key]}")
 
+
 def getErrorLineFromCode(code, typeMap, lineNumber, doc, tag, text):
     printed = False
     for key in typeMap:
@@ -340,21 +384,23 @@ def getErrorLineFromCode(code, typeMap, lineNumber, doc, tag, text):
             if (len(codeSplitByEqual) == 2):
                 printed = True
                 classId = getClassIdFromType(typeOfVar)
-                with tag('p', klass = classId):
+                with tag('p', klass=classId):
                     locVar = codeSplitByEqual[0].index(key)
                     # text(codeSplitByEqual[0][0:locVar])
                     # with tag('mark'):
-                        # text(codeSplitByEqual[0][locVar:locVar+len(key)])
+                    # text(codeSplitByEqual[0][locVar:locVar+len(key)])
                     # text(f'{codeSplitByEqual[0][locVar+len(key):]}={codeSplitByEqual[1]}')
                     if (typeOfVar == 'Ambiguous'):
-                        errorMap[lineNumber] = 'Warning, there may be any error on this line due to the ambigious nature of the variables'
+                        errorMap[
+                            lineNumber] = 'Warning, there may be any error on this line due to the ambigious nature of the variables'
                     if (typeOfVar == 'Error'):
                         errorMap[lineNumber] = 'Error, there is an error on this line caused by type mismatch'
     # if printed is False:
-        # with tag('p'):
-            # text(code)
-            # TODO: support multiple 
-            # TODO: hover functionality if multiple types
+    # with tag('p'):
+    # text(code)
+    # TODO: support multiple
+    # TODO: hover functionality if multiple types
+
 
 class Analyzer(ast.NodeVisitor):
     # list of valid type
@@ -987,7 +1033,6 @@ class Analyzer(ast.NodeVisitor):
                     a_list.append(0)
                 num = num - 1
 
-            print(a_list)
             if 0 in a_list:
                 D[self.fn_name][self.var_name][self.line_no] = 'Error'
             elif 2 in a_list:
@@ -1086,6 +1131,7 @@ class Analyzer(ast.NodeVisitor):
                     return C[class_name][fn_name]['return'][0]
                 else:
                     print("not a return function")
+                    return D[self.fn_name][self.var_name][self.line_no]
             else:
                 print("no such function")
                 return 'Error'
@@ -1153,7 +1199,6 @@ class Analyzer(ast.NodeVisitor):
             D[self.fn_name][self.var_name][self.line_no] = 'Error'
         else:
             self.recurse(ast.BinOp(n.target, n.op, n.value))
-
 
     # def process_subscript(self, n):
 

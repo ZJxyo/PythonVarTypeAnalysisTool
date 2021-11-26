@@ -1,0 +1,5 @@
+digraph {
+	label="Variable < a >"
+	node [shape=box]
+	-1 [label="arg0: String"]
+}

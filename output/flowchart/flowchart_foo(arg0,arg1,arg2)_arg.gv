@@ -1,0 +1,5 @@
+digraph {
+	label="Variable < arg >"
+	node [shape=box]
+	-2 [label="arg1: List, Set, String, Float, Boolean, Tuple, Integer, Dictionary"]
+}
