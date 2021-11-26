@@ -87,6 +87,7 @@ def main():
     analyzer.visit(tree)
 
     remove_static()
+    print(C)
 
     htmlText = generateHighlightedCode(C['Default'], code.split('\n'))
     errorText = generateErrorReport(C['Default'], code.split('\n'))
@@ -96,7 +97,6 @@ def main():
 
     with open("../output/analysis/analysis.html", "w") as file1:
         file1.writelines(htmlText)
-    print(C)
 
     createFlowChart()
     groupPages()
@@ -1148,6 +1148,7 @@ class Analyzer(ast.NodeVisitor):
         if class_name in C.keys():
             if fn_name in C[class_name].keys():
                 if 'return' in C[class_name][fn_name].keys():
+                    print(class_name, fn_name, )
                     return C[class_name][fn_name]['return'][0]
                 else:
                     print("not a return function")
@@ -1182,6 +1183,10 @@ class Analyzer(ast.NodeVisitor):
                             D[self.fn_name][self.var_name][self.line_no] = D[fn_name]['return'][ln]
                 else:
                     print("not a return function")
+                    if rt:
+                        return "Error"
+                    else:
+                        D[self.fn_name][self.var_name][self.line_no] = "Error"
         else:
             print("review code, case not covered")
             if rt:
