@@ -167,4 +167,83 @@ We implemented a functionality that loads a map from a JSON file with the format
 ### TA Feedback:
 - The progress of our implementation is good. When implementing the static analysis, we should focus more on control flow. Additionally, we should check out the “Unification” algorithm which is used for type inference. This algorithm might be useful for implementing the static analysis, but it is not necessary.
 
+# Milestone 5
 
+### User study:
+
+```
+1  def foo(a, arg):
+2     b = 2
+3     c = 2.0
+4     d = '2.0'
+5     e = b + c
+6     f = b * d
+7     k = False
+8     if arg > 4:
+9         b = 2.5 + c
+10    elif arg == 4:
+11        b = '2.5' + d
+12    g = b
+13    return a + d
+14
+15 def boo(k):
+16    tool_version = 2
+17    print(foo(tool_version,k))
+18    return numpy.random.randint(5)
+19 boo(3)
+```
+
+#### Are you new to Python, or are you an experienced Python user? On a scale of 0 to 5, rate how well you know Python.
+The participant did learn Python in the past yet he is still relatively inexperienced with Python.
+#### Find the type of the parameters b, c, d, e, f and g.</br>
+b: int
+c: float
+d: string
+e: float
+f: string
+k: boolean
+g: not sure
+#### What’s the return type of foo?
+“Might be string”
+#### What’s the return type of boo?
+“int”
+#### What type should a be?
+“string”
+#### What type should arg be?
+“int”
+#### How did you find the type of the parameters? Random guesses? Derived from code? Intuition?
+“Since the parameters are assigned with value, we can know the type of it” - derived from code.
+-The program is simple and therefore the participant managed to derive the types without much effort.
+![](https://media.github.students.cs.ubc.ca/user/1447/files/98252200-43fd-11ec-8340-cf71c1ba500d)
+
+#### Find the type of the parameters b, c, d, e, f and g base on the analysis result.
+Same result as above
+#### What’s the return type of foo?
+“The highlight on foo indicates that it is returning a string whereas the participant believes that it should return an int instead.”
+- This is in fact our mistake, needs to modify function_return.json
+#### What’s the return type of boo?
+"string"
+#### What type should a be?
+"str"
+#### What type should arg be?
+"int"
+#### Did you make any changes?
+The participant also spotted the mistake on line 17 after looking at the error log.
+#### What is the reason behind each change you made?
+
+#### Suggestions/problems from the participant
+
+“It is easy to mix up different colors, some of them look nearly identical.”
+- Currently we have no plan to change this part.
+
+“The color-coded version does not show functions' arguments type. Would be nice to show them.”
+- Arguments are pretty much always ambiguous. Users can refer to the error log for more info in case there is an error.
+
+“On line 5, for example, it would be helpful to also color the variables b and c.”
+- Our static analysis unfortunately does not support this feature.
+
+“The participant wasn’t sure that the highlight on function names indicate their return type.”
+- Will put down details this in documentation so that users no longer need to guess what the colors mean.
+
+#### Comment on the tool
+“Can be useful for those who do not like using a debugger.”
