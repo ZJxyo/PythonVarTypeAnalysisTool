@@ -50,6 +50,10 @@ pre[class*="language-"] {
     background-color: rgb(128, 128, 128, 0.5)
   }
 
+  mark.Dictionary {
+    background-color: rgb(0, 170, 50, 0.5)
+  }
+
   mark.Error {
     background-color: rgb(230, 25, 75, 0.5);
   }
@@ -90,6 +94,7 @@ pre[class*="language-"] {
 .legend .Tuple { background-color: rgba(210, 245, 60, 0.5); }
 .legend .Boolean { background-color: rgba(245, 130, 48, 0.5); }
 .legend .Multiple { background-color: rgba(220, 190, 255, 0.5); }
+.legend .Dictionary { background-color: rgba(0, 170, 75, 0.5); }
 .legend .Set { background-color: rgba(128, 128, 128, 0.5) }
 .legend .Error { background-color: rgba(230, 25, 75, 0.5); }
 

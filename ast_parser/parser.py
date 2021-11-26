@@ -989,6 +989,12 @@ class Analyzer(ast.NodeVisitor):
         #     self.recurse(i)
         # self.map_list(n)
 
+    def process_dict(self, n):
+        D[self.fn_name][self.var_name][self.line_no].add(dict)
+
+    def process_set(self, n):
+        D[self.fn_name][self.var_name][self.line_no].add(set)
+
     def map_list(self, n):
         lt = []
         self.list_reconstructor(n, lt)
@@ -1267,6 +1273,10 @@ class Analyzer(ast.NodeVisitor):
             self.process_tuple(n)
         elif isinstance(n, ast.List):
             self.process_list(n)
+        elif isinstance(n, ast.Dict):
+            self.process_dict(n)
+        elif isinstance(n, ast.Set):
+            self.process_set(n)
         elif isinstance(n, ast.Name):
             self.process_name(n)
         elif isinstance(n, ast.Call):
