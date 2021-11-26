@@ -281,33 +281,64 @@ def extractVariablesFromLine(codeLine, typeMap, lineNumber, functionVariableMap,
         if (lineNumber in typeMap[key]):
             typeOfVar = typeMap[key][lineNumber]
             codeSplitByEqual = codeLine.split('=')
-            if (len(codeSplitByEqual) == 2):
+
+            if(len(codeSplitByEqual) > 1):
+                index = 0
+                if len(codeSplitByEqual) > 2:
+                    new_split = []
+                    for var in codeSplitByEqual:
+                        new_split.append(re.sub(' ', '', var))
+                    for i, var in enumerate(new_split):
+                        if key == var:
+                            index = i
+
                 printed = True
                 classId = getClassIdFromType(typeOfVar)
-                locVar = codeSplitByEqual[0].index(key)
-                variableName = codeSplitByEqual[0][locVar:locVar + len(key)]
+                locVar = codeSplitByEqual[index].index(key)
+                variableName = codeSplitByEqual[index][locVar:locVar + len(key)]
                 if (variableName in functionVariableMap):
                     functionVariableMap[variableName].append((lineNumber, typeOfVar))
                 else:
                     functionVariableMap[variableName] = [(lineNumber, typeOfVar)]
-                text(codeSplitByEqual[0][0:locVar])
+                text(codeSplitByEqual[index][0:locVar])
                 if (classId == "Multiple"):
                     with tag('div', klass='tooltip'):
                         with tag('mark', klass=classId):
                             text(variableName)
-                        text(f'{codeSplitByEqual[0][locVar + len(key):]}={codeSplitByEqual[1]}')
-                        with tag('span', klass='tooltiptext'):
-                            tooltipList = ''
-                            for varType in typeOfVar:
-                                tooltipList = f'{tooltipList} {IdMap[str(varType)]}, '
-                            text(f'{tooltipList[:-2]} ')
+                        if len(codeSplitByEqual) > 2:
+                            if index == len(codeSplitByEqual) - 2:
+                                text(f'{codeSplitByEqual[index][locVar + len(key):]}={codeSplitByEqual[index + 1]}')
+                                with tag('span', klass='tooltiptext'):
+                                    tooltipList = ''
+                                    for varType in typeOfVar:
+                                        tooltipList = f'{tooltipList} {IdMap[str(varType)]}, '
+                                    text(f'{tooltipList[:-2]} ')
+                            else:
+                                text(f' =')
+                                with tag('span', klass='tooltiptext'):
+                                    tooltipList = ''
+                                    for varType in typeOfVar:
+                                        tooltipList = f'{tooltipList} {IdMap[str(varType)]}, '
+                                    text(f'{tooltipList[:-2]} ')
+                        else:
+                            text(f'{codeSplitByEqual[index][locVar + len(key):]}={codeSplitByEqual[1]}')
+                            with tag('span', klass='tooltiptext'):
+                                tooltipList = ''
+                                for varType in typeOfVar:
+                                    tooltipList = f'{tooltipList} {IdMap[str(varType)]}, '
+                                text(f'{tooltipList[:-2]} ')
                 else:
                     with tag('mark', klass=classId):
                         text(variableName)
-                    text(f'{codeSplitByEqual[0][locVar + len(key):]}={codeSplitByEqual[1]}')
+                    if len(codeSplitByEqual) > 2:
+                        if index == len(codeSplitByEqual) - 2:
+                            text(f'{codeSplitByEqual[index][locVar + len(key):]}={codeSplitByEqual[index + 1]}')
+                        else:
+                            text(f' =')
+                    else:
+                        text(f'{codeSplitByEqual[index][locVar + len(key):]}={codeSplitByEqual[1]}')
     if printed is False:
         text(codeLine)
-        # TODO: support lines such as b = a = 35
 
 
 def getClassIdFromType(typeOfVar):
