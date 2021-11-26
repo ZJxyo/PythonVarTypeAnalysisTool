@@ -247,3 +247,7 @@ The participant also spotted the mistake on line 17 after looking at the error l
 
 #### Comment on the tool
 “Can be useful for those who do not like using a debugger.”
+
+### TA suggestions
+1) Write good documentation
+2) Write interesting test programs
