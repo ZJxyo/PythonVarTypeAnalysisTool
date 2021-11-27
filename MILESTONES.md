@@ -169,7 +169,7 @@ We implemented a functionality that loads a map from a JSON file with the format
 
 # Milestone 5
 
-### User study
+### User Study
 
     1  def foo(a, arg):
     2     b = 2
@@ -243,16 +243,16 @@ We implemented a functionality that loads a map from a JSON file with the format
 “The participant wasn’t sure that the highlight on function names indicate their return type.”
 - The details of our implementation will be recorded in the documentation, which should clear up any future confusion.
 
-### Plans for final video
+### Plans for Final Video
 - We have completed a draft version of the script for the video. 
 
-### Planned timeline
+### Planned Timeline
 - 11/27 Improve styling, polish features
 - 11/28 Final testing & bug fixes
 - 11/29 Finish documentation
 - 11/29 Finish sample programs
 - 11/29 Finish video
 
-### TA feedback
+### TA Feedback
 - Write good documentation
 - Write interesting test programs
