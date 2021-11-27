@@ -171,27 +171,24 @@ We implemented a functionality that loads a map from a JSON file with the format
 
 ### User study:
 
-```
-1  def foo(a, arg):
-2     b = 2
-3     c = 2.0
-4     d = '2.0'
-5     e = b + c
-6     f = b * d
-7     k = False
-8     if arg > 4:
-9         b = 2.5 + c
-10    elif arg == 4:
-11        b = '2.5' + d
-12    g = b
-13    return a + d
-14
-15 def boo(k):
-16    tool_version = 2
-17    print(foo(tool_version,k))
-18    return numpy.random.randint(5)
-19 boo(3)
-```
+    1  def foo(a, arg):
+    2     b = 2
+    3     c = 2.0
+    4     d = '2.0'
+    5     e = b + c
+    6     f = b * d
+    7     k = False
+    8     if arg > 4:
+    9         b = 2.5 + c
+    10    elif arg == 4:
+    11        b = '2.5' + d
+    12    g = b
+    13    return a + d
+    14 
+    15 def boo(k):
+    16    tool_version = 2
+    17    print(foo(tool_version,k))
+    18    return numpy.random.randint(5)
 
 #### Are you new to Python, or are you an experienced Python user? On a scale of 0 to 5, rate how well you know Python.
 > The participant did learn Python in the past however he is still relatively inexperienced with Python.
@@ -232,23 +229,30 @@ We implemented a functionality that loads a map from a JSON file with the format
 #### Any changes from part 1?
 > The participant spotted the mistake on line 17 after looking at the error log.
 
-#### Suggestions/problems from the participant
+#### Suggestions from the participant & planned changes
 
 “It is easy to mix up different colors, some of them look nearly identical.”
-- Currently we have no plan to change this part.
+- Due to the number of types, assigning distinct colors to each type would be difficult. Although harsher colors could ease this problem, they will decrease the readability of the highlighted text. Therefore, we plan keeping the colors as is.
 
 “The color-coded version does not show functions' arguments type. Would be nice to show them.”
-- Arguments are pretty much always ambiguous. Users can refer to the error log for more info in case there is an error.
+- Arguments are often ambiguous. Users can refer to the type history flowchart for more info.
 
 “On line 5, for example, it would be helpful to also color the variables b and c.”
-- Our static analysis unfortunately does not support this feature.
+- Although this is a reasonable suggestion that might improve readability, highlighting variable access would distract from the purpose of our analysis program.
 
 “The participant wasn’t sure that the highlight on function names indicate their return type.”
-- Will put down details this in documentation so that users no longer need to guess what the colors mean.
+- The details of our implementation will be recorded in the documentation, which should clear up any future confusion.
 
-#### Comment on the tool
-“Can be useful for those who do not like using a debugger.”
+### Plans for final video
+- We have completed a draft version of the script for the video. 
 
-### TA suggestions
-1) Write good documentation
-2) Write interesting test programs
+### Planned timeline
+- 11/27 Improve styling, polish features
+- 11/28 Final testing & bug fixes
+- 11/29 Finish documentation
+- 11/29 Finish sample programs
+- 11/29 Finish video
+
+### TA feedback
+- Write good documentation
+- Write interesting test programs
