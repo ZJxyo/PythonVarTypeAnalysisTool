@@ -1,0 +1,8 @@
+digraph {
+	label="Variable <z>"
+	bgcolor="#f5f2f0"
+	node [shape=box]
+	node [fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"]
+	fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"
+	8 [label=" 8: Set "]
+}

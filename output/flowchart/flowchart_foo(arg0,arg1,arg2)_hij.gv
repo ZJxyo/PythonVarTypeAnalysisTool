@@ -1,0 +1,8 @@
+digraph {
+	label="Variable <hij>"
+	bgcolor="#f5f2f0"
+	node [shape=box]
+	node [fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"]
+	fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"
+	18 [label=" 18: Integer, Float, String "]
+}

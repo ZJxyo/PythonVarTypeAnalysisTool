@@ -1,5 +1,8 @@
 digraph {
 	label="Return Type"
+	bgcolor="#f5f2f0"
 	node [shape=box]
-	13 [label="13: String"]
+	node [fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"]
+	fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"
+	22 [label=" 22: String "]
 }

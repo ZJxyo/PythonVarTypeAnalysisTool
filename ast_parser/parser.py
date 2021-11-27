@@ -89,6 +89,9 @@ def main():
     remove_static()
     print(C)
 
+    generateReports(code)
+
+def generateReports(code):
     htmlText = generateHighlightedCode(C['Default'], code.split('\n'))
     errorText = generateErrorReport(C['Default'], code.split('\n'))
 
@@ -112,32 +115,56 @@ def remove_static():
             if fn in D:
                 D.pop(fn)
 
-def groupPages():
+def groupFlowchart():
     doc, tag, text = Doc().tagtext()
 
     with tag('html'):
+        with tag('head'):
+            doc.stag('link', rel='stylesheet', href='flow.css')
         with tag('body'):
-            with tag('h2'):
-                with tag('a', href='analysis/analysis.html'):
-                    text("Type Analysis Highlighting")
-                doc.stag('br')
-                doc.stag('br')
-            with tag('h2'):
-                with tag('a', href='error_report/ErrorReport.html'):
-                    text("Error Report")
-                doc.stag('br')
-                doc.stag('br')
             files = glob.glob('../output/flowchart/*')
             for f in files:
                 if f.title().split(".")[-1] == "Html":
                     link = f.title().split("/")[-1].lower()
-                    link = re.sub(r'\\', '/', link)
-                    with tag('h2'):
-                        with tag('a', href=link):
-                            name = f.title().split("\\")[-1].split('.')[0].split('_')
-                            text(name[0] + " for " + name[1].lower())
-                        doc.stag('br')
-                        doc.stag('br')
+                    link = '../' + re.sub(r'\\', '/', link)
+
+                    with tag('div', klass='parent'):
+                        with tag('h2'):
+                            with tag('a', href=link, klass='b1'):
+                                name = f.title().split("\\")[-1].split('.')[0].split('_')
+                                text(name[1].lower())
+
+    result = doc.getvalue()
+
+    with open(f"../output/flowchartgroup/flow.html", "w") as file1:
+        file1.writelines(result)
+
+
+def groupPages():
+    groupFlowchart()
+
+    doc, tag, text = Doc().tagtext()
+
+    with tag('html'):
+        with tag('head'):
+            doc.stag('link', rel='stylesheet', href='Main.css')
+        with tag('body'):
+            doc.stag('br')
+            with tag('h1', klass='h1'):
+                text("Python Type Static Analysis Tool")
+            doc.stag('br')
+            with tag('div', klass='parent'):
+                with tag('h2'):
+                    with tag('a', href='analysis/analysis.html', klass='b1'):
+                        text("Type Analysis Highlighting")
+            with tag('div', klass='parent'):
+                with tag('h2'):
+                    with tag('a', href='flowchartgroup/flow.html', klass='b2'):
+                        text("Type History Flowcharts")
+            with tag('div', klass='parent'):
+                with tag('h2'):
+                    with tag('a', href='error_report/ErrorReport.html', klass='b3'):
+                        text("Error Report Summary")
 
     result = doc.getvalue()
 
@@ -161,13 +188,16 @@ def createFlowChart():
         fn_new = fn_s + '(' + param[0:(len(param) - 1)] + ')'
         for var in D[fn]:
             prev = None
-            g = graphviz.Digraph(filename=f'../output/flowchart/flowchart_{fn_new}_{var}.gv', format='png')
-            lfn.append(f'../output/flowchart/flowchart_{fn_new}_{var}.gv.png')
+            g = graphviz.Digraph(filename=f'../output/flowchart/flowchart_{fn_new}_{var}.gv', format='svg')
+            lfn.append(f'../output/flowchart/flowchart_{fn_new}_{var}.gv.svg')
             if var == 'return':
                 g.attr(label=f'Return Type')
             else:
-                g.attr(label=f'Variable < {var} >')
+                g.attr(label=f'Variable <{var}>')
+            g.attr(bgcolor="#f5f2f0")
             g.attr('node', shape='box')
+            g.attr('node', fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace")
+            g.attr(fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace")
 
             for ln_no in D[fn][var]:
                 if ln_no < 0:
@@ -181,7 +211,7 @@ def createFlowChart():
                 else:
                     tp_s.append(D[fn][var][ln_no])
 
-                g.node(str(ln_no), new_ln_no + ": " + re.sub('\[|\]|\'', '', str(tp_s)))
+                g.node(str(ln_no), " " + new_ln_no + ": " + re.sub('\[|\]|\'', '', str(tp_s)) + " ")
                 if prev is not None:
                     g.edge(prev, str(ln_no))
                 prev = str(ln_no)
@@ -194,13 +224,20 @@ def createFlowChart():
         doc, tag, text = Doc().tagtext()
 
         with tag('html'):
+            with tag('head'):
+                doc.stag('link', rel='stylesheet', href='../flowchartcss/flowchart.css')
+                with tag('script'):
+                    doc.attr(src='../flowchartcss/flowchart.js')
             with tag('body'):
-                with tag('h1'):
+                with tag('h1', klass='h1'):
                     text("Function " + fn_new + " Type History")
+                doc.stag('hr')
                 for fn in lfn:
-                    doc.stag('img', src=fn)
                     doc.stag('br')
+                    with tag('iframe', klass='center', width='0', height='0', frameBorder='0', src=fn, onload='resize(this)'):
+                        text("")
                     doc.stag('br')
+                    doc.stag('hr')
 
         result = doc.getvalue()
 
@@ -392,7 +429,7 @@ def generateErrorReport(typeMapping, codeList):
     doc, tag, text = Doc().tagtext()
     with tag('html'):
         with tag('head'):
-            doc.stag('link', rel='stylesheet', href='error.css')
+            doc.stag('link', rel='stylesheet', href='ErrorReport.css')
     with tag('body'):
         generateErrors(typeMapping, codeList, doc, tag, text)
     return doc.getvalue()
@@ -402,7 +439,8 @@ def generateErrors(typeMapping, codeList, doc, tag, text):
     functionTypeMap = {}
     lineNumber = 1
     with tag('code'):
-        text("Error Log")
+        with tag('h1'):
+            text("Error Log")
         for code in codeList:
             codeSplit = code.split()
             if (len(codeSplit) > 0 and codeSplit[0] == 'def'):
@@ -1270,6 +1308,7 @@ class Analyzer(ast.NodeVisitor):
         self.line_no = n.lineno
         self.dictionary_helper()
         if len(list(D[self.fn_name][self.var_name].keys())) == 1:
+            errorMap[self.line_no] = "Uninitialized variable"
             D[self.fn_name][self.var_name][self.line_no] = 'Error'
         else:
             self.recurse(ast.BinOp(n.target, n.op, n.value))

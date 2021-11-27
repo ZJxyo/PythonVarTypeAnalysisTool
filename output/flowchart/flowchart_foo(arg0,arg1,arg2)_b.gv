@@ -1,11 +1,16 @@
 digraph {
-	label="Variable < b >"
+	label="Variable <b>"
+	bgcolor="#f5f2f0"
 	node [shape=box]
-	2 [label="2: Integer"]
-	9 [label="9: Float"]
-	2 -> 9
-	11 [label="11: String"]
-	9 -> 11
-	11.5 [label="11.5: Integer, Float, String"]
-	11 -> 11.5
+	node [fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"]
+	fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"
+	2 [label=" 2: Integer "]
+	13 [label=" 13: Float "]
+	2 -> 13
+	15 [label=" 15: String "]
+	13 -> 15
+	15.5 [label=" 15.5: Integer, Float, String "]
+	15 -> 15.5
+	17 [label=" 17: Integer, Float, String "]
+	15.5 -> 17
 }

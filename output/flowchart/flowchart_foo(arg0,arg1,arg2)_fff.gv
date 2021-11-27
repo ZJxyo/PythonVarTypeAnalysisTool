@@ -1,0 +1,10 @@
+digraph {
+	label="Variable <fff>"
+	bgcolor="#f5f2f0"
+	node [shape=box]
+	node [fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"]
+	fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"
+	20 [label=" 20: Integer "]
+	21 [label=" 21: Integer "]
+	20 -> 21
+}

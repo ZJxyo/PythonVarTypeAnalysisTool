@@ -1,5 +1,8 @@
 digraph {
-	label="Variable < c >"
+	label="Variable <c>"
+	bgcolor="#f5f2f0"
 	node [shape=box]
-	3 [label="3: Float"]
+	node [fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"]
+	fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"
+	3 [label=" 3: Float "]
 }

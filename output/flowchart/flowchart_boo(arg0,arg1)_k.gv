@@ -1,5 +1,8 @@
 digraph {
-	label="Variable < k >"
+	label="Variable <k>"
+	bgcolor="#f5f2f0"
 	node [shape=box]
-	-1 [label="arg0: List, Set, String, Float, Boolean, Tuple, Integer, Dictionary"]
+	node [fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"]
+	fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"
+	-1 [label=" arg0: List, Set, String, Float, Boolean, Tuple, Integer, Dictionary "]
 }

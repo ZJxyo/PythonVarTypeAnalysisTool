@@ -1,5 +1,8 @@
 digraph {
-	label="Variable < x >"
+	label="Variable <x>"
+	bgcolor="#f5f2f0"
 	node [shape=box]
-	17 [label="17: Error"]
+	node [fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"]
+	fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"
+	26 [label=" 26: Error "]
 }

@@ -1,5 +1,8 @@
 digraph {
-	label="Variable < tool_version >"
+	label="Variable <tool_version>"
+	bgcolor="#f5f2f0"
 	node [shape=box]
-	16 [label="16: Integer"]
+	node [fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"]
+	fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"
+	25 [label=" 25: Integer "]
 }

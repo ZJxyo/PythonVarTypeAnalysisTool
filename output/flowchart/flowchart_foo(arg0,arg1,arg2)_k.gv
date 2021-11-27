@@ -1,5 +1,8 @@
 digraph {
-	label="Variable < k >"
+	label="Variable <k>"
+	bgcolor="#f5f2f0"
 	node [shape=box]
-	7 [label="7: Boolean"]
+	node [fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"]
+	fontname="Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace"
+	7 [label=" 7: Boolean "]
 }
