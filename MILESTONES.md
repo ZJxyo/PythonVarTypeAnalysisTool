@@ -160,16 +160,16 @@ We implemented a functionality that loads a map from a JSON file with the format
 ### Final User Study Plans
 - We plan to provide sample code to participants and ask for their feedback. 
 
-### Planned Timeline:
+### Planned Timeline
 - 11/23 or 11/24 Finish implementing the visual component 
 - 11/25 or 11/26 Create the video for the project
 
-### TA Feedback:
+### TA Feedback
 - The progress of our implementation is good. When implementing the static analysis, we should focus more on control flow. Additionally, we should check out the “Unification” algorithm which is used for type inference. This algorithm might be useful for implementing the static analysis, but it is not necessary.
 
 # Milestone 5
 
-### User study:
+### User study
 
     1  def foo(a, arg):
     2     b = 2
